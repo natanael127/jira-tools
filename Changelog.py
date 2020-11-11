@@ -4,6 +4,7 @@ from base64 import b64encode
 import json
 import pygit2
 import os
+import pyinputplus as pyip
 
 # ===================== CONSTANTS ============================================ #
 FILE_AUTH = "authentication.json"
@@ -49,6 +50,11 @@ for file_name in os.listdir("./"):
         project_counter += 1
         print(str(project_counter).zfill(2) + " - " + file_name[len(START_FILE_PRJ):-len(EXT_FILE_PRJ)])
 
+project_index = pyip.inputInt("\nChoose a number: ", min=0, max=len(project_list))
+if project_index == 0:
+    pass
+else:
+    pass
 # Tests
 jira_obj = get_jira_issue(credentials, "BM-160")
 with open(FILE_DEBUG, "w") as fp:
