@@ -29,6 +29,7 @@ if os.path.isfile(FILE_AUTH):
     with open(FILE_AUTH, "r") as fp:
         credentials = json.load(fp)
 else:
+    print("USER AUTHENTICATION: \n")
     credentials["server_url"] = input("Server URL: ")
     credentials["user_name"] = input("User name: ")
     credentials["api_key"] = input("API key: ")
@@ -38,6 +39,17 @@ else:
             json.dump(credentials, fp)
 
 # Project selection
+print("PROJECTS TEMPLATES: \n")
+print("00 - Create new")
+project_list = []
+project_counter = 0
+for file_name in os.listdir("./"):
+    if os.path.isfile(file_name) and file_name.startswith(START_FILE_PRJ) and file_name.endswith(EXT_FILE_PRJ):
+        project_list.append(file_name)
+        project_counter += 1
+        print(str(project_counter).zfill(2) + " - " + file_name[len(START_FILE_PRJ):-len(EXT_FILE_PRJ)])
+
+# Tests
 jira_obj = get_jira_issue(credentials, "BM-160")
 with open(FILE_DEBUG, "w") as fp:
     json.dump(jira_obj, fp)
