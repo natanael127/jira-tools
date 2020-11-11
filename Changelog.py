@@ -8,6 +8,8 @@ import os
 # ===================== CONSTANTS ============================================ #
 FILE_AUTH = "authentication.json"
 FILE_DEBUG = "debug.json"
+EXT_FILE_PRJ = ".json"
+START_FILE_PRJ = "project_"
 
 # ===================== AUXILIAR FUNCTIONS =================================== #
 def get_jira_issue(auth_obj, issue_key):
@@ -23,7 +25,7 @@ def get_jira_issue(auth_obj, issue_key):
 # ===================== MAIN SCRIPT ========================================== #
 # User authentication
 credentials = {}
-if os.path.exists(FILE_AUTH):
+if os.path.isfile(FILE_AUTH):
     with open(FILE_AUTH, "r") as fp:
         credentials = json.load(fp)
 else:
@@ -35,6 +37,7 @@ else:
         with open(FILE_AUTH, "w") as fp:
             json.dump(credentials, fp)
 
+# Project selection
 jira_obj = get_jira_issue(credentials, "BM-160")
 with open(FILE_DEBUG, "w") as fp:
     json.dump(jira_obj, fp)
