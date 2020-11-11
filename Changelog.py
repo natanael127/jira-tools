@@ -25,12 +25,12 @@ def get_jira_issue(auth_obj, issue_key):
 
 # ===================== MAIN SCRIPT ========================================== #
 # User authentication
-credentials = {}
 if os.path.isfile(FILE_AUTH):
     with open(FILE_AUTH, "r") as fp:
         credentials = json.load(fp)
 else:
     print("USER AUTHENTICATION: \n")
+    credentials = {}
     credentials["server_url"] = input("Server URL: ")
     credentials["user_name"] = input("User name: ")
     credentials["api_key"] = input("API key: ")
@@ -39,7 +39,7 @@ else:
         with open(FILE_AUTH, "w") as fp:
             json.dump(credentials, fp)
 
-# Project selection
+# Project listing
 print("PROJECTS TEMPLATES: \n")
 print("00 - Create new")
 project_list = []
@@ -52,9 +52,26 @@ for file_name in os.listdir("./"):
 
 project_index = pyip.inputInt("\nChoose a number: ", min=0, max=len(project_list))
 if project_index == 0:
-    pass
+    # Project insertion
+    project_data = {}
+    project_name = input("Project name: ")
+    project_data["path"] = input("Path to repository: ")
+    project_data["jira_abbrevs"] = []
+    count_jira_abbrevs = 0
+    print("Enter project keys (empty string to scape)")
+    while True:
+        jira_abbrev = input("Key #" + str(count_jira_abbrevs + 1) + ": ")
+        if jira_abbrev != "":
+            count_jira_abbrevs += 1
+            project_data["jira_abbrevs"].append(jira_abbrev)
+        else:
+            break
+    with open(START_FILE_PRJ + project_name + EXT_FILE_PRJ, "w") as fp:
+        json.dump(project_data, fp)
 else:
-    pass
+    # Project selection
+    with open(project_list[project_index - 1], "r") as fp:
+        project_data = json.load(fp)
 # Tests
 jira_obj = get_jira_issue(credentials, "BM-160")
 with open(FILE_DEBUG, "w") as fp:
