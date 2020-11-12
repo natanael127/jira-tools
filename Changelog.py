@@ -46,7 +46,7 @@ def extract_jira_issues_from_string(content, list_of_abbrev):
     return result_list
 
 def print_title_section(string_to_print):
-    print("==========================")
+    print("=====================================================")
     print(string_to_print)
     print()
                 
@@ -129,6 +129,7 @@ list_keys = list(dict.fromkeys(list_keys))
 
 # --------------------- Issues validation using Jira API
 # Lists valid issues
+print_title_section("Downloading info from Jira...")
 valid_issues_list = []
 for jira_key in list_keys:
     jira_dict = get_jira_issue(credentials, jira_key)
@@ -142,3 +143,6 @@ with open(FILE_OUTPUT,"w") as fp:
     csv_out = csv.writer(fp, delimiter=";", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
     for row in valid_issues_list:
         csv_out.writerow(row)
+
+# Informs the end
+print("Done!")
