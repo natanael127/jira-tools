@@ -44,6 +44,11 @@ def extract_jira_issues_from_string(content, list_of_abbrev):
             else:
                 break
     return result_list
+
+def print_title_section(string_to_print):
+    print("==========================")
+    print(string_to_print)
+    print()
                 
 
 # ===================== MAIN SCRIPT ========================================== #
@@ -52,7 +57,7 @@ if os.path.isfile(FILE_AUTH):
     with open(FILE_AUTH, "r") as fp:
         credentials = json.load(fp)
 else:
-    print("USER AUTHENTICATION: \n")
+    print_title_section("USER AUTHENTICATION")
     credentials = {}
     credentials["server_url"] = input("Server URL: ")
     credentials["user_name"] = input("User name: ")
@@ -64,7 +69,7 @@ else:
 
 # --------------------- Choice or creation of project template
 # Project listing
-print("PROJECTS TEMPLATES: \n")
+print_title_section("PROJECTS TEMPLATES")
 print("00 - Create new")
 project_list = []
 project_counter = 0
@@ -78,6 +83,7 @@ for file_name in os.listdir(PRJ_DIR):
 project_index = pyip.inputInt("\nChoose a number: ", min=0, max=len(project_list))
 if project_index == 0:
     # Project insertion
+    print_title_section("NEW PROJECT")
     project_data = {}
     project_name = input("Project name: ")
     project_data["path"] = input("Path to repository: ")
@@ -100,9 +106,10 @@ else:
 
 # --------------------- Repository reading
 # Git objects initialization
+print_title_section("GIT REFERENCES")
 repo = pygit2.Repository(project_data["path"] + GIT_DIR)
-new_tag_str = "bm_hmi_sup_v421_r002" # TODO: prompt these values
-old_tag_str = "BM_MM_v6.11r004"
+new_tag_str = input("Newest tag or commit: ")
+old_tag_str = input("Oldest tag or commit: ")
 new_commit, new_reference = repo.resolve_refish(new_tag_str)
 old_commit, old_reference = repo.resolve_refish(old_tag_str)
 list_commits = list(repo.walk(new_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
