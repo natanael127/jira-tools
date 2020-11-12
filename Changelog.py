@@ -24,6 +24,27 @@ def get_jira_issue(auth_obj, issue_key):
     raw_data = res.read().decode("utf-8")
     return json.loads(raw_data)
 
+def extract_jira_issues_from_string(content, list_of_abbrev):
+    result_list = []
+    for jira_abbrev in list_of_abbrev:
+        start_pos = 0
+        find_str = jira_abbrev + "-"
+        while True:
+            start_mem = start_pos
+            start_pos += content[start_pos:].find(find_str)
+            if (start_pos >= start_mem):
+                start_pos += len(find_str)
+                end_pos = start_pos + 1
+                while content[start_pos:end_pos].isnumeric():
+                    end_pos += 1
+                end_pos -= 1
+                if start_pos != end_pos:
+                    result_list.append(content[start_pos-len(find_str) : end_pos])
+            else:
+                break
+    return result_list
+                
+
 # ===================== MAIN SCRIPT ========================================== #
 # --------------------- User authentication
 if os.path.isfile(FILE_AUTH):
@@ -84,12 +105,20 @@ old_tag_str = "BM_MM_v6.11r004"
 new_commit, new_reference = repo.resolve_refish(new_tag_str)
 old_commit, old_reference = repo.resolve_refish(old_tag_str)
 list_commits = list(repo.walk(new_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
-# Trim list of commits from new tag to old tag only
+# Search for jira keys
+list_keys = []
 for index_commit in range(len(list_commits)):
     if list_commits[index_commit].hex == old_commit.hex:
+        # Found old tag
         break
-list_commits = list_commits[:index_commit + 1]
+    else:
+        # Find Jira keys
+        list_keys += extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
+# Solved issues from oldest to newest eliminating duplicated items
+list_keys.reverse()
+list_keys = list(dict.fromkeys(list_keys)))
 
+# --------------------- Issues validation using Jira API
 # Tests
 if False:
     jira_obj = get_jira_issue(credentials, "BM-160")
