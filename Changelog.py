@@ -5,10 +5,11 @@ import json
 import pygit2
 import os
 import pyinputplus as pyip
+import csv
 
 # ===================== CONSTANTS ============================================ #
 FILE_AUTH = "authentication.json"
-FILE_DEBUG = "debug.json"
+FILE_OUTPUT = "output.csv"
 PRJ_EXT = ".json"
 PRJ_DIR = "projects/"
 GIT_DIR = ".git/"
@@ -116,12 +117,20 @@ for index_commit in range(len(list_commits)):
         list_keys += extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
 # Solved issues from oldest to newest eliminating duplicated items
 list_keys.reverse()
-list_keys = list(dict.fromkeys(list_keys)))
+list_keys = list(dict.fromkeys(list_keys))
 
 # --------------------- Issues validation using Jira API
-# Tests
-if False:
-    jira_obj = get_jira_issue(credentials, "BM-160")
-    with open(FILE_DEBUG, "w") as fp:
-        json.dump(jira_obj, fp)
-    print(jira_obj["fields"]["summary"])
+# Lists valid issues
+valid_issues_list = []
+for jira_key in list_keys:
+    jira_dict = get_jira_issue(credentials, jira_key)
+    if "errorMessages" in jira_dict.keys():
+        list_keys.remove(jira_key)
+    else:
+        valid_issues_list.append((jira_key, jira_dict["fields"]["summary"]))
+
+# Dumps to a csv
+with open(FILE_OUTPUT,"w") as fp:
+    csv_out = csv.writer(fp, delimiter=";", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
+    for row in valid_issues_list:
+        csv_out.writerow(row)
