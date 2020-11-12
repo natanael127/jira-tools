@@ -11,6 +11,7 @@ FILE_AUTH = "authentication.json"
 FILE_DEBUG = "debug.json"
 PRJ_EXT = ".json"
 PRJ_DIR = "projects/"
+GIT_DIR = ".git/"
 
 # ===================== AUXILIAR FUNCTIONS =================================== #
 def get_jira_issue(auth_obj, issue_key):
@@ -24,7 +25,7 @@ def get_jira_issue(auth_obj, issue_key):
     return json.loads(raw_data)
 
 # ===================== MAIN SCRIPT ========================================== #
-# User authentication
+# --------------------- User authentication
 if os.path.isfile(FILE_AUTH):
     with open(FILE_AUTH, "r") as fp:
         credentials = json.load(fp)
@@ -39,6 +40,7 @@ else:
         with open(FILE_AUTH, "w") as fp:
             json.dump(credentials, fp)
 
+# --------------------- Choice or creation of project template
 # Project listing
 print("PROJECTS TEMPLATES: \n")
 print("00 - Create new")
@@ -73,8 +75,24 @@ else:
     # Project selection
     with open(PRJ_DIR + project_list[project_index - 1], "r") as fp:
         project_data = json.load(fp)
+
+# --------------------- Repository reading
+# Git objects initialization
+repo = pygit2.Repository(project_data["path"] + GIT_DIR)
+new_tag_str = "bm_hmi_sup_v421_r002" # TODO: prompt these values
+old_tag_str = "BM_MM_v6.11r004"
+new_commit, new_reference = repo.resolve_refish(new_tag_str)
+old_commit, old_reference = repo.resolve_refish(old_tag_str)
+list_commits = list(repo.walk(new_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
+# Trim list of commits from new tag to old tag only
+for index_commit in range(len(list_commits)):
+    if list_commits[index_commit].hex == old_commit.hex:
+        break
+list_commits = list_commits[:index_commit + 1]
+
 # Tests
-jira_obj = get_jira_issue(credentials, "BM-160")
-with open(FILE_DEBUG, "w") as fp:
-    json.dump(jira_obj, fp)
-print(jira_obj["fields"]["summary"])
+if False:
+    jira_obj = get_jira_issue(credentials, "BM-160")
+    with open(FILE_DEBUG, "w") as fp:
+        json.dump(jira_obj, fp)
+    print(jira_obj["fields"]["summary"])
