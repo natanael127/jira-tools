@@ -9,8 +9,8 @@ import pyinputplus as pyip
 # ===================== CONSTANTS ============================================ #
 FILE_AUTH = "authentication.json"
 FILE_DEBUG = "debug.json"
-EXT_FILE_PRJ = ".json"
-START_FILE_PRJ = "project_"
+PRJ_EXT = ".json"
+PRJ_DIR = "projects/"
 
 # ===================== AUXILIAR FUNCTIONS =================================== #
 def get_jira_issue(auth_obj, issue_key):
@@ -44,11 +44,12 @@ print("PROJECTS TEMPLATES: \n")
 print("00 - Create new")
 project_list = []
 project_counter = 0
-for file_name in os.listdir("./"):
-    if os.path.isfile(file_name) and file_name.startswith(START_FILE_PRJ) and file_name.endswith(EXT_FILE_PRJ):
-        project_list.append(file_name)
-        project_counter += 1
-        print(str(project_counter).zfill(2) + " - " + file_name[len(START_FILE_PRJ):-len(EXT_FILE_PRJ)])
+if not os.path.isdir(os.path.dirname(PRJ_DIR)):
+    os.makedirs(os.path.dirname(PRJ_DIR))
+for file_name in os.listdir(PRJ_DIR):
+    project_list.append(file_name)
+    project_counter += 1
+    print(str(project_counter).zfill(2) + " - " + file_name.split(".")[0])
 
 project_index = pyip.inputInt("\nChoose a number: ", min=0, max=len(project_list))
 if project_index == 0:
@@ -66,11 +67,11 @@ if project_index == 0:
             project_data["jira_abbrevs"].append(jira_abbrev)
         else:
             break
-    with open(START_FILE_PRJ + project_name + EXT_FILE_PRJ, "w") as fp:
+    with open(PRJ_DIR + project_name + PRJ_EXT, "w") as fp:
         json.dump(project_data, fp)
 else:
     # Project selection
-    with open(project_list[project_index - 1], "r") as fp:
+    with open(PRJ_DIR + project_list[project_index - 1], "r") as fp:
         project_data = json.load(fp)
 # Tests
 jira_obj = get_jira_issue(credentials, "BM-160")
