@@ -76,9 +76,10 @@ project_counter = 0
 if not os.path.isdir(os.path.dirname(PRJ_DIR)):
     os.makedirs(os.path.dirname(PRJ_DIR))
 for file_name in os.listdir(PRJ_DIR):
-    project_list.append(file_name)
-    project_counter += 1
-    print(str(project_counter).zfill(2) + " - " + file_name.split(".")[0])
+    if os.path.isfile(PRJ_DIR + file_name):
+        project_list.append(file_name)
+        project_counter += 1
+        print(str(project_counter).zfill(2) + " - " + file_name.split(".")[0])
 
 project_index = pyip.inputInt("\nChoose a number: ", min=0, max=len(project_list))
 if project_index == 0:
