@@ -130,19 +130,23 @@ list_keys = list(dict.fromkeys(list_keys))
 # --------------------- Issues validation using Jira API
 # Lists valid issues
 print_title_section("Downloading info from Jira...")
-valid_issues_list = []
+list_valid_issues = []
 for jira_key in list_keys:
     jira_dict = get_jira_issue(credentials, jira_key)
     if "errorMessages" in jira_dict.keys():
         list_keys.remove(jira_key)
     else:
-        valid_issues_list.append((jira_key, jira_dict["fields"]["summary"]))
+        customized_dict = {}
+        customized_dict["Jira key"] = jira_key
+        customized_dict["Summary"] = jira_dict["fields"]["summary"]
+        list_valid_issues.append(customized_dict)
 
 # Dumps to a csv
-with open(FILE_OUTPUT,"w") as fp:
-    csv_out = csv.writer(fp, delimiter=";", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
-    for row in valid_issues_list:
-        csv_out.writerow(row)
+csv_keys = list_valid_issues[0].keys()
+with open(FILE_OUTPUT,"w", newline='') as fp:
+    dict_writer = csv.DictWriter(fp, csv_keys, delimiter=";", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
+    dict_writer.writeheader()
+    dict_writer.writerows(list_valid_issues)
 
 # Informs the end
 print("Done!")
