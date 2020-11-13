@@ -107,12 +107,12 @@ else:
 
 # --------------------- Repository reading
 # Git objects initialization
-print_title_section("GIT REFERENCES")
+print_title_section("GIT REFERENCES (tag, commit or branch)")
 repo = pygit2.Repository(project_data["path"] + GIT_DIR)
-new_tag_str = input("Newest tag or commit: ")
-old_tag_str = input("Oldest tag or commit: ")
-new_commit, new_reference = repo.resolve_refish(new_tag_str)
-old_commit, old_reference = repo.resolve_refish(old_tag_str)
+new_ref_str = input("Newest reference: ")
+old_ref_str = input("Oldest reference: ")
+new_commit, new_reference = repo.resolve_refish(new_ref_str)
+old_commit, old_reference = repo.resolve_refish(old_ref_str)
 list_commits = list(repo.walk(new_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
 # Search for jira keys
 list_keys = []
