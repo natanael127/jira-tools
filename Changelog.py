@@ -138,7 +138,9 @@ for jira_key in list_keys:
     else:
         customized_dict = {}
         customized_dict["Jira key"] = jira_key
+        customized_dict["Type"] = jira_dict["fields"]["issuetype"]["name"]
         customized_dict["Summary"] = jira_dict["fields"]["summary"]
+        customized_dict["Assignee"] = jira_dict["fields"]["assignee"]["displayName"]
         list_valid_issues.append(customized_dict)
 
 # Dumps to a csv
