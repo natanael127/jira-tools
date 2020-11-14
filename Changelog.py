@@ -133,9 +133,7 @@ print_title_section("Downloading info from Jira...")
 list_valid_issues = []
 for element in list_keys:
     jira_dict = get_jira_issue(credentials, element["jira-key"])
-    if "errorMessages" in jira_dict.keys():
-        list_keys.remove(element["jira-key"])
-    else:
+    if "errorMessages" not in jira_dict.keys():
         customized_dict = {}
         customized_dict["Jira key"] = element["jira-key"]
         customized_dict["Type"] = jira_dict["fields"]["issuetype"]["name"]
