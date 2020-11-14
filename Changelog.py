@@ -122,27 +122,32 @@ for index_commit in range(len(list_commits)):
         break
     else:
         # Find Jira keys
-        list_keys += extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
-# Solved issues from oldest to newest eliminating duplicated items
-list_keys.reverse()
-list_keys = list(dict.fromkeys(list_keys))
+        list_found_keys_commit = extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
+        for found_key_commit in list_found_keys_commit:
+            if found_key_commit not in [d["jira-key"] for d in list_keys if "jira-key" in d]:
+                list_keys.append({"jira-key": found_key_commit, "last-update": list_commits[index_commit].commit_time})
 
 # --------------------- Issues validation using Jira API
 # Lists valid issues
 print_title_section("Downloading info from Jira...")
-valid_issues_list = []
-for jira_key in list_keys:
-    jira_dict = get_jira_issue(credentials, jira_key)
-    if "errorMessages" in jira_dict.keys():
-        list_keys.remove(jira_key)
-    else:
-        valid_issues_list.append((jira_key, jira_dict["fields"]["summary"]))
+list_valid_issues = []
+for element in list_keys:
+    jira_dict = get_jira_issue(credentials, element["jira-key"])
+    if "errorMessages" not in jira_dict.keys():
+        customized_dict = {}
+        customized_dict["Jira key"] = element["jira-key"]
+        customized_dict["Type"] = jira_dict["fields"]["issuetype"]["name"]
+        customized_dict["Timestamp"] = element["last-update"]
+        customized_dict["Summary"] = jira_dict["fields"]["summary"]
+        customized_dict["Assignee"] = jira_dict["fields"]["assignee"]["displayName"]
+        list_valid_issues.append(customized_dict)
 
 # Dumps to a csv
-with open(FILE_OUTPUT,"w") as fp:
-    csv_out = csv.writer(fp, delimiter=";", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
-    for row in valid_issues_list:
-        csv_out.writerow(row)
+csv_keys = list_valid_issues[0].keys()
+with open(FILE_OUTPUT,"w", newline='') as fp:
+    dict_writer = csv.DictWriter(fp, csv_keys, delimiter=",", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
+    dict_writer.writeheader()
+    dict_writer.writerows(list_valid_issues)
 
 # Informs the end
 print("Done!")
