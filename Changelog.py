@@ -122,23 +122,24 @@ for index_commit in range(len(list_commits)):
         break
     else:
         # Find Jira keys
-        list_keys += extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
-# Solved issues from oldest to newest eliminating duplicated items
-list_keys.reverse()
-list_keys = list(dict.fromkeys(list_keys))
+        list_found_keys_commit = extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
+        for found_key_commit in list_found_keys_commit:
+            if found_key_commit not in [d["jira-key"] for d in list_keys if "jira-key" in d]:
+                list_keys.append({"jira-key": found_key_commit, "last-update": list_commits[index_commit].commit_time})
 
 # --------------------- Issues validation using Jira API
 # Lists valid issues
 print_title_section("Downloading info from Jira...")
 list_valid_issues = []
-for jira_key in list_keys:
-    jira_dict = get_jira_issue(credentials, jira_key)
+for element in list_keys:
+    jira_dict = get_jira_issue(credentials, element["jira-key"])
     if "errorMessages" in jira_dict.keys():
-        list_keys.remove(jira_key)
+        list_keys.remove(element["jira-key"])
     else:
         customized_dict = {}
-        customized_dict["Jira key"] = jira_key
+        customized_dict["Jira key"] = element["jira-key"]
         customized_dict["Type"] = jira_dict["fields"]["issuetype"]["name"]
+        customized_dict["Timestamp"] = element["last-update"]
         customized_dict["Summary"] = jira_dict["fields"]["summary"]
         customized_dict["Assignee"] = jira_dict["fields"]["assignee"]["displayName"]
         list_valid_issues.append(customized_dict)
