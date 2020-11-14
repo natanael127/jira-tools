@@ -146,7 +146,7 @@ for jira_key in list_keys:
 # Dumps to a csv
 csv_keys = list_valid_issues[0].keys()
 with open(FILE_OUTPUT,"w", newline='') as fp:
-    dict_writer = csv.DictWriter(fp, csv_keys, delimiter=";", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
+    dict_writer = csv.DictWriter(fp, csv_keys, delimiter=",", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
     dict_writer.writeheader()
     dict_writer.writerows(list_valid_issues)
 
