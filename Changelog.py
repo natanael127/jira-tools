@@ -13,6 +13,7 @@ FILE_OUTPUT = "output.csv"
 PRJ_EXT = ".json"
 PRJ_DIR = "projects/"
 GIT_DIR = ".git/"
+N_BARS_PROGRESS = 30
 
 # ===================== AUXILIAR FUNCTIONS =================================== #
 def get_jira_issue(auth_obj, issue_key):
@@ -131,7 +132,18 @@ for index_commit in range(len(list_commits)):
 # Lists valid issues
 print_title_section("Downloading info from Jira...")
 list_valid_issues = []
+count_elements = 0
 for element in list_keys:
+    # Progress bar
+    count_elements += 1
+    print("Progress: |", end="")
+    for bar_counter in range(N_BARS_PROGRESS):
+        if (bar_counter + 1) / N_BARS_PROGRESS <= count_elements / len(list_keys):
+            print("\u2588", end="")
+        else:
+            print(" ", end="")
+    print("| " + str(int(count_elements * 100 / len(list_keys))).rjust(3) + "%", end="\r")
+    # Download and parse
     jira_dict = get_jira_issue(credentials, element["jira-key"])
     if "errorMessages" not in jira_dict.keys():
         customized_dict = {}
@@ -150,4 +162,4 @@ with open(FILE_OUTPUT,"w", newline='') as fp:
     dict_writer.writerows(list_valid_issues)
 
 # Informs the end
-print("Done!")
+print("\nDone!")
