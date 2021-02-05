@@ -1,4 +1,6 @@
 *.json
 *.txt
+*.html
+*.md
 *.csv
-
+style*.py
