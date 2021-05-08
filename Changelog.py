@@ -36,24 +36,19 @@ def get_jira_issue(auth_obj, issue_key):
     return json.loads(raw_data)
 
 def extract_jira_issues_from_string(content, list_of_abbrev):
-    result_list = []
+    import re
+    # Compose the regex string
+    str_regex = "(\W|^)("
     for jira_abbrev in list_of_abbrev:
-        start_pos = 0
-        find_str = jira_abbrev + "-"
-        while True:
-            start_mem = start_pos
-            start_pos += content[start_pos:].find(find_str)
-            if (start_pos >= start_mem):
-                start_pos += len(find_str)
-                end_pos = start_pos + 1
-                while content[start_pos:end_pos].isnumeric():
-                    end_pos += 1
-                end_pos -= 1
-                if start_pos != end_pos:
-                    result_list.append(content[start_pos-len(find_str) : end_pos])
-            else:
-                break
-    return result_list
+        str_regex += jira_abbrev + "|"
+    str_regex += ")(-)(\d+)"
+    # Get a list of matches like tupple
+    list_matches = re.findall(str_regex, content)
+    list_result = []
+    # Turns the tupple in string
+    for element in list_matches:
+        list_result.append("".join(list(element[1:])))
+    return list_result
 
 def print_title_section(string_to_print):
     print("=====================================================")
