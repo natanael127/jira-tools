@@ -9,7 +9,6 @@ import csv
 
 # ===================== CONSTANTS ============================================ #
 FILE_AUTH = "authentication.json"
-FILE_OUTPUT = "output.csv"
 PRJ_EXT = ".json"
 PRJ_DIR = "projects/"
 GIT_DIR = ".git/"
@@ -156,7 +155,8 @@ for element in list_keys:
 
 # Dumps to a csv
 csv_keys = list_valid_issues[0].keys()
-with open(FILE_OUTPUT,"w", newline='') as fp:
+file_name_output = "FROM " + old_ref_str + " TO " + new_ref_str + ".csv"
+with open(file_name_output,"w", newline='') as fp:
     dict_writer = csv.DictWriter(fp, csv_keys, delimiter=",", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
     dict_writer.writeheader()
     dict_writer.writerows(list_valid_issues)
