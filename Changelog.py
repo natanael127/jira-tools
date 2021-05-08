@@ -15,6 +15,16 @@ GIT_DIR = ".git/"
 N_BARS_PROGRESS = 30
 
 # ===================== AUXILIAR FUNCTIONS =================================== #
+def create_progress_bar(fraction, number_of_bars):
+    str_output = "|"
+    for bar_counter in range(number_of_bars):
+        if (bar_counter + 1) / number_of_bars <= fraction:
+            str_output += "\u2588"
+        else:
+            str_output += " "
+    str_output += "| " + str(int(fraction * 100)).rjust(3) + "%"
+    return str_output
+
 def get_jira_issue(auth_obj, issue_key):
     conn = HTTPSConnection(auth_obj["server_url"])
     auth_string = auth_obj["user_name"] + ":" + auth_obj["api_key"]
@@ -122,28 +132,19 @@ for commit_obj in list_commits_new:
         list_commits.append(commit_obj)
 # Search for jira keys
 list_keys = []
-for index_commit in range(len(list_commits)):
+for commit_obj in list_commits:
     # Find Jira keys
-    list_found_keys_commit = extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
+    list_found_keys_commit = extract_jira_issues_from_string(commit_obj.message, project_data["jira_abbrevs"])
     for found_key_commit in list_found_keys_commit:
         if found_key_commit not in [d["jira-key"] for d in list_keys if "jira-key" in d]:
-            list_keys.append({"jira-key": found_key_commit, "last-update": list_commits[index_commit].commit_time})
+            list_keys.append({"jira-key": found_key_commit, "last-update": commit_obj.commit_time})
 
 # --------------------- Issues validation using Jira API
 # Lists valid issues
 print_title_section("Downloading info from Jira...")
 list_valid_issues = []
-count_elements = 0
-for element in list_keys:
-    # Progress bar
-    count_elements += 1
-    print("Progress: |", end="")
-    for bar_counter in range(N_BARS_PROGRESS):
-        if (bar_counter + 1) / N_BARS_PROGRESS <= count_elements / len(list_keys):
-            print("\u2588", end="")
-        else:
-            print(" ", end="")
-    print("| " + str(int(count_elements * 100 / len(list_keys))).rjust(3) + "%", end="\r")
+for count_elements, element in enumerate(list_keys):
+    print("Progress: " + create_progress_bar((count_elements + 1) / len(list_keys), N_BARS_PROGRESS), end="\r")
     # Download and parse
     jira_dict = get_jira_issue(credentials, element["jira-key"])
     if "errorMessages" not in jira_dict.keys():
