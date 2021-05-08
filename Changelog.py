@@ -150,7 +150,10 @@ for element in list_keys:
         customized_dict["Type"] = jira_dict["fields"]["issuetype"]["name"]
         customized_dict["Timestamp"] = element["last-update"]
         customized_dict["Summary"] = jira_dict["fields"]["summary"]
-        customized_dict["Assignee"] = jira_dict["fields"]["assignee"]["displayName"]
+        try:
+            customized_dict["Assignee"] = jira_dict["fields"]["assignee"]["displayName"]
+        except:
+            customized_dict["Assignee"] = ""
         list_valid_issues.append(customized_dict)
 
 # Dumps to a csv
