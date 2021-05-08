@@ -113,19 +113,21 @@ new_ref_str = input("Newest reference: ")
 old_ref_str = input("Oldest reference: ")
 new_commit, new_reference = repo.resolve_refish(new_ref_str)
 old_commit, old_reference = repo.resolve_refish(old_ref_str)
-list_commits = list(repo.walk(new_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
+list_commits = []
+list_commits_new = list(repo.walk(new_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
+list_commits_old = list(repo.walk(old_reference.target, pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME))
+# Find commits ahead in newest reference
+for commit_obj in list_commits_new:
+    if commit_obj not in list_commits_old:
+        list_commits.append(commit_obj)
 # Search for jira keys
 list_keys = []
 for index_commit in range(len(list_commits)):
-    if list_commits[index_commit].hex == old_commit.hex:
-        # Found old tag
-        break
-    else:
-        # Find Jira keys
-        list_found_keys_commit = extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
-        for found_key_commit in list_found_keys_commit:
-            if found_key_commit not in [d["jira-key"] for d in list_keys if "jira-key" in d]:
-                list_keys.append({"jira-key": found_key_commit, "last-update": list_commits[index_commit].commit_time})
+    # Find Jira keys
+    list_found_keys_commit = extract_jira_issues_from_string(list_commits[index_commit].message, project_data["jira_abbrevs"])
+    for found_key_commit in list_found_keys_commit:
+        if found_key_commit not in [d["jira-key"] for d in list_keys if "jira-key" in d]:
+            list_keys.append({"jira-key": found_key_commit, "last-update": list_commits[index_commit].commit_time})
 
 # --------------------- Issues validation using Jira API
 # Lists valid issues
