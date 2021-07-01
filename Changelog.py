@@ -6,6 +6,7 @@ import pygit2
 import os
 import pyinputplus as pyip
 import csv
+import re
 
 # ===================== CONSTANTS ============================================ #
 FILE_AUTH = "authentication.json"
@@ -36,7 +37,6 @@ def get_jira_issue(auth_obj, issue_key):
     return json.loads(raw_data)
 
 def extract_jira_issues_from_string(content, list_of_abbrev):
-    import re
     # Compose the regex string
     str_regex = "(\W|^)("
     for jira_abbrev in list_of_abbrev:
