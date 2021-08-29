@@ -113,7 +113,7 @@ else:
 # --------------------- Repository reading
 # Git objects initialization
 print_title_section("GIT REFERENCES (tag, commit or branch)")
-repo = pygit2.Repository(project_data["path"] + GIT_DIR)
+repo = pygit2.Repository(os.path.join(project_data["path"], GIT_DIR))
 new_ref_str = input("Newest reference: ")
 old_ref_str = input("Oldest reference: ")
 new_commit, new_reference = repo.resolve_refish(new_ref_str)
