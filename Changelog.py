@@ -4,7 +4,6 @@ import json
 import pygit2
 import os
 import pyinputplus as pyip
-import csv
 import re
 
 # ===================== CONSTANTS ============================================ #
@@ -149,13 +148,11 @@ for count_elements, element in enumerate(list_keys):
             customized_dict["Assignee"] = ""
         list_valid_issues.append(customized_dict)
 
-# Dumps to a csv
-csv_keys = list_valid_issues[0].keys()
-file_name_output = "FROM " + old_ref_str + " TO " + new_ref_str + ".csv"
-with open(file_name_output,"w", newline='') as fp:
-    dict_writer = csv.DictWriter(fp, csv_keys, delimiter=",", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
-    dict_writer.writeheader()
-    dict_writer.writerows(list_valid_issues)
+# Dumps to a json
+output_dict = {"version_name": new_ref_str, "version_time": new_commit.commit_time, "issues_list": list_valid_issues}
+file_name_output = "FROM " + old_ref_str + " TO " + new_ref_str + ".json"
+with open(file_name_output, "w") as fp:
+    json.dump(output_dict, fp, indent=4)
 
 # Informs the end
 print("\nDone!")
