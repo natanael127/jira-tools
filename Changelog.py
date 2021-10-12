@@ -1,6 +1,5 @@
 # ===================== IMPORTS ============================================== #
-from http.client import HTTPSConnection
-from base64 import b64encode
+import requests
 import json
 import pygit2
 import os
@@ -27,13 +26,9 @@ def create_progress_bar(fraction, number_of_bars):
     return str_output
 
 def get_jira_issue(auth_obj, issue_key):
-    conn = HTTPSConnection(auth_obj["server_url"])
-    auth_string = auth_obj["user_name"] + ":" + auth_obj["api_key"]
-    user_and_pass = b64encode(bytearray(auth_string, "utf-8")).decode("utf-8")
-    hdrs = { "Authorization" : "Basic " + user_and_pass }
-    conn.request("GET", "/rest/api/3/issue/" + issue_key, headers=hdrs)
-    res = conn.getresponse()
-    raw_data = res.read().decode("utf-8")
+    request_url = auth_obj["server_url"] + "/rest/api/3/issue/" + issue_key
+    resp = requests.get(request_url, auth=(auth_obj["user_name"], auth_obj["api_key"]))
+    raw_data = resp.content.decode("utf-8")
     return json.loads(raw_data)
 
 def extract_jira_issues_from_string(content, list_of_abbrev):
