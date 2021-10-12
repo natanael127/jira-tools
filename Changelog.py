@@ -3,7 +3,7 @@ import requests
 import json
 import pygit2
 import os
-import pyinputplus as pyip
+import pyinputplus
 import re
 
 # ===================== CONSTANTS ============================================ #
@@ -25,7 +25,7 @@ def create_progress_bar(fraction, number_of_bars):
     return str_output
 
 def get_jira_issue(auth_obj, issue_key):
-    request_url = auth_obj["server_url"] + "/rest/api/3/issue/" + issue_key
+    request_url = auth_obj["server_url"] + "rest/api/3/issue/" + issue_key
     resp = requests.get(request_url, auth=(auth_obj["user_name"], auth_obj["api_key"]))
     raw_data = resp.content.decode("utf-8")
     return json.loads(raw_data)
@@ -59,12 +59,14 @@ else:
     print_title_section("USER AUTHENTICATION")
     credentials = {}
     credentials["server_url"] = input("Server URL: ")
-    credentials["user_name"] = input("User name: ")
-    credentials["api_key"] = input("API key: ")
-    store_credentials = input("\nSave credentials to file? (Y/N): ")
-    if store_credentials.lower() == "y":
+    if not credentials["server_url"].endswith("/"):
+        credentials["server_url"] += "/"
+    credentials["user_name"] = input("API user (your e-mail): ")
+    credentials["api_key"] = input("API key (https://id.atlassian.com/manage-profile/security/api-tokens): ")
+    store_credentials = pyinputplus.inputYesNo("\nSave credentials to file? (Y/N): ")
+    if store_credentials == "yes":
         with open(FILE_AUTH, "w") as fp:
-            json.dump(credentials, fp)
+            json.dump(credentials, fp, indent=4)
 
 # --------------------- Choice or creation of project template
 # Project listing
@@ -80,7 +82,7 @@ for file_name in os.listdir(PRJ_DIR):
         project_counter += 1
         print(str(project_counter).zfill(2) + " - " + file_name.split(".")[0])
 
-project_index = pyip.inputInt("\nChoose a number: ", min=0, max=len(project_list))
+project_index = pyinputplus.inputInt("\nChoose a number: ", min=0, max=len(project_list))
 if project_index == 0:
     # Project insertion
     print_title_section("NEW PROJECT")
