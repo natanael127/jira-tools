@@ -1,5 +1,5 @@
 # ===================== IMPORTS ============================================== #
-import requests
+import jira
 import json
 import pygit2
 import os
@@ -24,12 +24,6 @@ def create_progress_bar(fraction, number_of_bars):
     str_output += "| " + str(int(fraction * 100)).rjust(3) + "%"
     return str_output
 
-def get_jira_issue(auth_obj, issue_key):
-    request_url = auth_obj["server_url"] + "rest/api/3/issue/" + issue_key
-    resp = requests.get(request_url, auth=(auth_obj["user_name"], auth_obj["api_key"]))
-    raw_data = resp.content.decode("utf-8")
-    return json.loads(raw_data)
-
 def extract_jira_issues_from_string(content, list_of_abbrev):
     # Compose the regex string
     str_regex = "(\W|^)("
@@ -52,21 +46,8 @@ def print_title_section(string_to_print):
 
 # ===================== MAIN SCRIPT ========================================== #
 # --------------------- User authentication
-if os.path.isfile(FILE_AUTH):
-    with open(FILE_AUTH, "r") as fp:
-        credentials = json.load(fp)
-else:
-    print_title_section("USER AUTHENTICATION")
-    credentials = {}
-    credentials["server_url"] = input("Server URL: ")
-    if not credentials["server_url"].endswith("/"):
-        credentials["server_url"] += "/"
-    credentials["user_name"] = input("API user (your e-mail): ")
-    credentials["api_key"] = input("API key (https://id.atlassian.com/manage-profile/security/api-tokens): ")
-    store_credentials = pyinputplus.inputYesNo("\nSave credentials to file? (Y/N): ")
-    if store_credentials == "yes":
-        with open(FILE_AUTH, "w") as fp:
-            json.dump(credentials, fp, indent=4)
+credentials = jira.auth_prompt_or_restore()
+jira_conn = jira.api(credentials["server_url"], credentials["user_name"], credentials["api_key"])
 
 # --------------------- Choice or creation of project template
 # Project listing
@@ -137,7 +118,7 @@ list_valid_issues = []
 for count_elements, element in enumerate(list_keys):
     print("Progress: " + create_progress_bar((count_elements + 1) / len(list_keys), N_BARS_PROGRESS), end="\r")
     # Download and parse
-    jira_dict = get_jira_issue(credentials, element["jira-key"])
+    jira_dict = jira_conn.get_issue(element["jira-key"], cache_use=True)
     if "errorMessages" not in jira_dict.keys():
         customized_dict = {}
         customized_dict["Jira key"] = element["jira-key"]

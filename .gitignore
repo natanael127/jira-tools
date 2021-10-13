@@ -3,4 +3,5 @@
 *.html
 *.md
 *.csv
+jira_cache/*
 style*.py
