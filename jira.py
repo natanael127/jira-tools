@@ -46,10 +46,18 @@ class api:
             issue_cache_dir = os.path.join(self.__cache_dir, "issue")
             if not os.path.isdir(issue_cache_dir):
                 os.makedirs(issue_cache_dir)
+            # Process existent cached files
+            dict_id_key_to_file = {}
+            cached_issue_files = os.listdir(issue_cache_dir)
+            for cached_file in cached_issue_files:
+                found_id = cached_file.split(".")[0].split(" ")[0]
+                found_key = cached_file.split(".")[0].split(" ")[1]
+                dict_id_key_to_file[found_id] = cached_file
+                dict_id_key_to_file[found_key] = cached_file
             # Verify cache
-            issue_file = os.path.join(issue_cache_dir, issue_key_or_id + ".json")
-            if os.path.isfile(issue_file):
+            if dict_id_key_to_file.get(issue_key_or_id) != None:
                 # Restore from file
+                issue_file = os.path.join(issue_cache_dir, dict_id_key_to_file.get(issue_key_or_id, ''))
                 with open(issue_file, "r") as fp:
                     output = json.load(fp)
             else:
@@ -63,9 +71,7 @@ class api:
                 except:
                     pass
                 # Create files for key and id
-                with open(os.path.join(issue_cache_dir, output["key"] + ".json"), "w") as fp:
-                    json.dump(output, fp)
-                with open(os.path.join(issue_cache_dir, output["id"] + ".json"), "w") as fp:
+                with open(os.path.join(issue_cache_dir, f"{output['id']} {output['key']}.json"), "w") as fp:
                     json.dump(output, fp)
         return output
 
