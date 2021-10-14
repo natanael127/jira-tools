@@ -36,7 +36,8 @@ list_interest = []
 while number_of_results > 0:
     result = jira_conn.get_worklog(list(range(first_worklog, first_worklog + group_worklog)), cache_use=True)
     number_of_results = len(result)
-    print(f"Downloading {number_of_results} elements between {first_worklog} and {first_worklog + group_worklog - 1}")
+    if number_of_results != 0:
+        print(f"\nDownloading {number_of_results} elements between {first_worklog} and {first_worklog + group_worklog - 1}")
     for count_elements, worklog in enumerate(result):
         print(">>>   " + create_progress_bar((count_elements + 1) / number_of_results, 30), end="\r")
         item_interest = copy.deepcopy(dummy_item)
@@ -61,21 +62,20 @@ while number_of_results > 0:
             item_interest["date"] = parser.isoparse(worklog["started"]).strftime("%Y-%m-%d")
         except:
             pass
-        if worklog.get("comment") != None:
-            if worklog.get("comment").get("content") != None:
-                list_phrases = []
-                for content in worklog.get("comment").get("content"):
-                    phrase = ""
-                    for subcontent in content["content"]:
-                        try:
-                            phrase += subcontent["text"]
-                        except:
-                            pass
-                    list_phrases.append(phrase)
-                item_interest["description"] = " ".join(list_phrases)
+        if worklog.get("comment", {}).get("content") != None:
+            list_phrases = []
+            for content in worklog.get("comment").get("content"):
+                phrase = ""
+                for subcontent in content["content"]:
+                    try:
+                        phrase += subcontent["text"]
+                    except:
+                        pass
+                list_phrases.append(phrase)
+            item_interest["description"] = " ".join(list_phrases)
         list_interest.append(item_interest)
-    print("\n")
     first_worklog += group_worklog
+print()
 
 # Sort the list by work id
 list_interest = sorted(list_interest, key=lambda d: d["work_id"])
